@@ -15,12 +15,12 @@ class RecurringTransfertFactory extends Factory
     public function definition(): array
     {
         return [
-            'start_at' => fake()->timestamp(),
-            'end_at' => fake()->timestamp(),
-            'frequency' => fake()->integer(),
+            'start_at' => fake()->date(),
+            'end_at' => fake()->date(),
+            'frequency' => fake()->numberBetween(0, 100),
             'recipient_email' => fake()->email(),
             'amount' => fake()->numberBetween(1, 100),
-            'reason' => fake()->string(),
+            'reason' => fake()->text(),
         ];
     }
 
