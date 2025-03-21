@@ -39,4 +39,14 @@ class RecurringTransfertRequest extends FormRequest
             ],
         ];
     }
+
+    public function getRecipient(): User
+    {
+        return User::where('email', '=', $this->input('recipient_email'))->firstOrFail();
+    }
+
+    public function getAmountInCents(): int
+    {
+        return (int) ceil($this->float('amount') * 100);
+    }
 }

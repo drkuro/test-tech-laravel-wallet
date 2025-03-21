@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\PerformWalletTransfer;
 use App\Http\Requests\RecurringTransfertRequest;
 use App\Models\RecurringTransfert;
 use Illuminate\Http\Request;
@@ -23,18 +24,33 @@ class RecurringTransfertController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(RecurringTransfertRequest $request)
+    public function store(RecurringTransfertRequest $request, PerformWalletTransfer $performWalletTransfer)
     {
+
+        $recipient = $request->getRecipient();
 
         $transfer = RecurringTransfert::create([
             'start_at' => $request->input('start_at'),
             'end_at' => $request->input('end_at'),
             'frequency' => $request->input('frequency'),
-            'recipient_email' => $request->input('recipient_email'),
-            'amount' => $request->input('amount') * 100,
+            'recipient_email' => $recipient->email,
+            'amount' => $request->getAmountInCents(),
             'reason' => $request->input('reason'),
             'user_id' => $request->user()->id,
         ]);
+
+        try {
+            $performWalletTransfer->execute(
+                sender: $request->user(),
+                recipient: $recipient,
+                amount: $request->getAmountInCents(),
+                reason: $request->input('reason'),
+            );
+        } catch (InsufficientBalance $exception) {
+            return redirect()->back()->with('money-sent-status', 'insufficient-balance')
+                ->with('money-sent-recipient-name', $recipient->name)
+                ->with('money-sent-amount', $request->getAmountInCents());
+        }
 
         return redirect(route('recurring', absolute: false));
     }

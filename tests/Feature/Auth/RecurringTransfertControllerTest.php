@@ -12,9 +12,7 @@ use function Pest\Laravel\post;
 
 test('create a new recurring transfert', function () {
     $user = User::factory()->has(Wallet::factory()->richChillGuy())->create();
-    $other = User::factory([
-        'email' => 'another.guy@test.fr',
-    ])->has(Wallet::factory()->richChillGuy())->create();
+    $other = User::factory()->has(Wallet::factory())->create();
     $wallet = Wallet::factory()->richChillGuy()->for($user)->create();
 
     actingAs($user);
@@ -23,10 +21,12 @@ test('create a new recurring transfert', function () {
         'start_at' => Carbon::now()->toDateString(),
         'end_at' => Carbon::now()->addMonth()->toDateString(),
         'frequency' => 10,
-        'recipient_email' => 'another.guy@test.fr',
-        'amount' => 10.00,
+        'recipient_email' => $other->email,
+        'amount' => 10,
         'reason' => 'unitTest',
     ]);
+
+    expect($other->refresh()->wallet->balance)->toBe(1000);
 
     assertDatabaseCount('recurring_transferts', 1);
     $response->assertRedirect(route('recurring', absolute: false));
