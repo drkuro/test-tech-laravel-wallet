@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use function Pest\Laravel\assertAuthenticated;
+use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 
@@ -21,5 +22,9 @@ test('new users can register', function () {
     ]);
 
     assertAuthenticated();
+
+    assertDatabaseCount('wallets', 1);
+
     $response->assertRedirect(route('dashboard', absolute: false));
+
 });

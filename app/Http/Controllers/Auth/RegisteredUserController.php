@@ -33,6 +33,9 @@ class RegisteredUserController
             'email' => strtolower($request->email),
             'password' => Hash::make($request->password),
         ]);
+        $user->wallet()->create([
+            'balance' => 0,
+        ]);
 
         event(new Registered($user));
 

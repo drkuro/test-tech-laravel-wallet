@@ -6,6 +6,8 @@ use App\Actions\PerformWalletTransaction;
 use App\Enums\WalletTransactionType;
 use App\Exceptions\InsufficientBalance;
 use App\Models\Wallet;
+use App\Notifications\WalletLowBalanceNotification;
+use Illuminate\Support\Facades\Notification;
 
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
@@ -35,6 +37,8 @@ test('perform a credit transaction', function () {
 });
 
 test('perform a debit transaction', function () {
+    Notification::fake();
+
     $wallet = Wallet::factory()->forUser()->richChillGuy()->create();
 
     $this->action->execute($wallet, WalletTransactionType::DEBIT, 100, 'test');
@@ -52,6 +56,11 @@ test('perform a debit transaction', function () {
         'type' => WalletTransactionType::DEBIT,
         'reason' => 'test',
     ]);
+
+    Notification::assertNotSentTo(
+        [$wallet->user],
+        WalletLowBalanceNotification::class
+    );
 });
 
 test('cannot perform a debit transaction if balance is insufficient', function () {
@@ -87,4 +96,31 @@ test('force a debit transaction when balance is insufficient', function () {
         'type' => WalletTransactionType::DEBIT,
         'reason' => 'test',
     ]);
+});
+
+test('send a notification if balance is below 10.00', function () {
+
+    Notification::fake();
+
+    $wallet = Wallet::factory()->forUser()->richChillGuy()->create();
+
+    $this->action->execute($wallet, WalletTransactionType::DEBIT, 999_999, 'test');
+
+    expect($wallet->balance)->toBe(1);
+
+    assertDatabaseHas('wallets', [
+        'id' => $wallet->id,
+        'balance' => 1,
+    ]);
+
+    assertDatabaseHas('wallet_transactions', [
+        'amount' => 999_999,
+        'wallet_id' => $wallet->id,
+        'type' => WalletTransactionType::DEBIT,
+        'reason' => 'test',
+    ]);
+    Notification::assertSentTo(
+        [$wallet->user],
+        WalletLowBalanceNotification::class
+    );
 });

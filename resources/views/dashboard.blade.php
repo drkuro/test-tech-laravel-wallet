@@ -21,47 +21,37 @@
                     @csrf
 
                     @if (session('money-sent-status') === 'success')
-                        <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
-                            <span class="font-medium">@lang('Money sent!')</span>
-                            @lang(':amount were successfully sent to :name.', ['amount' => Number::currencyCents(session('money-sent-amount', 0)), 'name' => session('money-sent-recipient-name')])
-                        </div>
+                    <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+                        <span class="font-medium">@lang('Money sent!')</span>
+                        @lang(':amount were successfully sent to :name.', ['amount' =>
+                        Number::currencyCents(session('money-sent-amount', 0)), 'name' =>
+                        session('money-sent-recipient-name')])
+                    </div>
                     @elseif (session('money-sent-status') === 'insufficient-balance')
-                            <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-                                <span class="font-medium">@lang('Insufficient balance!')</span>
-                                @lang('You can\'t send :amount to :name.', ['amount' => Number::currencyCents(session('money-sent-amount', 0)), 'name' => session('money-sent-recipient-name')])
-                            </div>
+                    <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                        <span class="font-medium">@lang('Insufficient balance!')</span>
+                        @lang('You can\'t send :amount to :name.', ['amount' =>
+                        Number::currencyCents(session('money-sent-amount', 0)), 'name' =>
+                        session('money-sent-recipient-name')])
+                    </div>
                     @endif
 
                     <div>
                         <x-input-label for="recipient_email" :value="__('Recipient email')" />
-                        <x-text-input id="recipient_email"
-                                      class="block mt-1 w-full"
-                                      type="email"
-                                      name="recipient_email"
-                                      :value="old('recipient_email')"
-                                      required />
+                        <x-text-input id="recipient_email" class="block mt-1 w-full" type="email" name="recipient_email"
+                            :value="old('recipient_email')" required />
                         <x-input-error :messages="$errors->get('recipient_email')" class="mt-2" />
                     </div>
                     <div>
                         <x-input-label for="amount" :value="__('Amount (€)')" />
-                        <x-text-input id="amount"
-                                      class="block mt-1 w-full"
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      :value="old('amount')"
-                                      name="amount"
-                                      required />
+                        <x-text-input id="amount" class="block mt-1 w-full" type="number" min="0" step="0.01"
+                            :value="old('amount')" name="amount" required />
                         <x-input-error :messages="$errors->get('amount')" class="mt-2" />
                     </div>
                     <div>
                         <x-input-label for="reason" :value="__('Reason')" />
-                        <x-text-input id="reason"
-                                      class="block mt-1 w-full"
-                                      type="text"
-                                      :value="old('reason')"
-                                      name="reason"
-                                      required />
+                        <x-text-input id="reason" class="block mt-1 w-full" type="text" :value="old('reason')"
+                            name="reason" required />
                         <x-input-error :messages="$errors->get('reason')" class="mt-2" />
                     </div>
 
@@ -76,23 +66,23 @@
                 <h2 class="text-xl font-bold mb-6">@lang('Transactions history')</h2>
                 <table class="w-full text-sm text-left text-gray-500 border border-gray-200">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">
-                            @lang('ID')
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            @lang('Reason')
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            @lang('Description')
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            @lang('Amount')
-                        </th>
-                    </tr>
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                @lang('ID')
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                @lang('Reason')
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                @lang('Description')
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                @lang('Amount')
+                            </th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @foreach($transactions as $transaction)
+                        @foreach($transactions as $transaction)
                         <tr class="bg-white border-b">
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 {{$transaction->id}}
@@ -102,29 +92,29 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($transaction->is_transfer)
-                                    @if ($transaction->type->isCredit())
-                                        @lang(':name sent you :amount', [
-                                            'amount' => Number::currencyCents($transaction->transfer->amount),
-                                            'name' => $transaction->transfer->source->user->name,
-                                        ])
-                                    @else
-                                        @lang('You sent :amount to :name', [
-                                            'amount' => Number::currencyCents($transaction->transfer->amount),
-                                            'name' => $transaction->transfer->target->user->name,
-                                        ])
-                                    @endif
+                                @if ($transaction->type->isCredit())
+                                @lang(':name sent you :amount', [
+                                'amount' => Number::currencyCents($transaction->transfer->amount),
+                                'name' => $transaction->transfer->source->user->name,
+                                ])
                                 @else
-                                    @lang('--')
+                                @lang('You sent :amount to :name', [
+                                'amount' => Number::currencyCents($transaction->transfer->amount),
+                                'name' => $transaction->transfer->target->user->name,
+                                ])
+                                @endif
+                                @else
+                                @lang('--')
                                 @endif
                             </td>
-                            <td @class([
-                                'px-6 py-4',
-                                $transaction->type->isCredit() ? 'text-green-500' : 'text-red-500',
-                            ])>
-                                {{Number::currencyCents($transaction->type->isCredit() ? $transaction->amount : -$transaction->amount)}}
+                            <td @class([ 'px-6 py-4' , $transaction->type->isCredit() ? 'text-green-500' :
+                                'text-red-500',
+                                ])>
+                                {{Number::currencyCents($transaction->type->isCredit() ? $transaction->amount :
+                                -$transaction->amount)}}
                             </td>
                         </tr>
-                    @endforeach
+                        @endforeach
                     </tbody>
                 </table>
             </div>
